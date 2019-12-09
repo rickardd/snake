@@ -121,10 +121,10 @@
             const isBottomLeft = verticalPart === "bottom" && horizontalPart === "left"
             const isBottomRight = verticalPart === "bottom" && horizontalPart === "right"
 
-            if (isTopLeft) pendingDirection = "up"
-            if (isTopRight) pendingDirection = "right"
-            if (isBottomRight) pendingDirection = "down"
-            if (isBottomLeft) pendingDirection = "left"
+            if (isTopLeft && currentDirection !== "down") pendingDirection = "up"
+            if (isTopRight && currentDirection !== "left") pendingDirection = "right"
+            if (isBottomRight && currentDirection !== "up") pendingDirection = "down"
+            if (isBottomLeft && currentDirection !== "right") pendingDirection = "left"
         }
 
         const snakeHead = () => snake[0]
@@ -169,8 +169,11 @@
 
             if (isHeadTouchingBody()) {
                 stop()
-                alert(`GAME OVER! You got ${score} apples`)
-                start()
+                // alert(`GAME OVER! You got ${score} apples`)
+                const restart = confirm(`GAME OVER! You got ${score} apples`);
+                if (restart) {
+                    start()
+                }
                 return
             }
             if (isHeadTouchingApple()) {
@@ -205,6 +208,8 @@
         }
 
         const start = () => {
+            currentDirection = "right"
+            pendingDirection = ""
             score = 0
             setApple()
             snake = [...snakeDefault]
