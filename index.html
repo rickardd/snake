@@ -13,12 +13,14 @@
 
         const { clientWidth, clientHeight } = document.body
         const canvasHeight = clientHeight < 800 ? clientHeight : 200
-        const canvasWidth = clientWidth < 500 ? clientWidth : 500
+        const canvasWidth = clientWidth < 800 ? clientWidth : 500
         const contextScale = 10
         const gameSpeed = 70
 
-        const bodyColor = "black"
+        const bodyColor = "#000"
         const canvasBackgroundColor = "#03306947"
+        const backgroundImageUrl = window.location.href.replace("index.html", "background.jpg")
+        console.log('backgroundImageUrl', backgroundImageUrl)
         const snakeColor = "#fff"
         const appleColor = "#ff0082"
         const canvas = document.querySelector("#canvas")
@@ -26,7 +28,7 @@
 
         document.body.style = `
             background-color: ${bodyColor};
-            background-image: url(background.jpg);
+            background-image: url(${backgroundImageUrl});
             display: flex;
             background-repeat: no-repeat;
             background-size: cover;
