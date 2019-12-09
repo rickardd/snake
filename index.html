@@ -11,8 +11,9 @@
 
     <script>
 
-        const canvasHeight = 200
-        const canvasWidth = 500
+        const { clientWidth, clientHeight } = document.body
+        const canvasHeight = clientHeight < 800 ? clientHeight : 200
+        const canvasWidth = clientWidth < 500 ? clientWidth : 500
         const contextScale = 10
         const gameSpeed = 70
 
@@ -30,6 +31,7 @@
             background-repeat: no-repeat;
             background-size: cover;
             background-blend-mode: luminosity;
+            margin: 0;
         `
         canvas.height = canvasHeight
         canvas.width = canvasWidth
@@ -95,6 +97,8 @@
         const onKeyup = ({ key }) => {
             const currentDirection = getDirection()
 
+            console.log("key", key)
+
             if (key === "ArrowUp" && currentDirection !== "down") pendingDirection = "up"
             if (key === "ArrowRight" && currentDirection !== "left") pendingDirection = "right"
             if (key === "ArrowDown" && currentDirection !== "up") pendingDirection = "down"
@@ -102,7 +106,11 @@
         }
 
         const onSwipe = function (direction) {
-            console.log(direction)
+            console.log("swipe", direction)
+
+            if (!direction) {
+                return
+            }
 
             const currentDirection = getDirection()
 
@@ -113,6 +121,7 @@
         }
 
         const onClick = ({ clientX: mouseX, clientY: mouseY }) => {
+            const currentDirection = getDirection()
             const { clientWidth, clientHeight } = document.body
             const horizontalPart = mouseX > (clientWidth / 2) ? "right" : "left"
             const verticalPart = mouseY > (clientHeight / 2) ? "bottom" : "top"
@@ -120,11 +129,14 @@
             const isTopRight = verticalPart === "top" && horizontalPart === "right"
             const isBottomLeft = verticalPart === "bottom" && horizontalPart === "left"
             const isBottomRight = verticalPart === "bottom" && horizontalPart === "right"
+            console.log("click", verticalPart, horizontalPart)
 
-            if (isTopLeft && currentDirection !== "down") pendingDirection = "up"
-            if (isTopRight && currentDirection !== "left") pendingDirection = "right"
-            if (isBottomRight && currentDirection !== "up") pendingDirection = "down"
-            if (isBottomLeft && currentDirection !== "right") pendingDirection = "left"
+            if (isTopLeft && currentDirection !== "down") return pendingDirection = "up"
+            if (isTopRight && currentDirection !== "left") return pendingDirection = "right"
+            if (isBottomRight && currentDirection !== "up") return pendingDirection = "down"
+            // console.log('click pendingDirection', isBottomLeft && currentDirection !== "right", isBottomLeft, currentDirection)
+            if (isBottomLeft && currentDirection !== "right") return pendingDirection = "left"
+
         }
 
         const snakeHead = () => snake[0]
@@ -243,6 +255,10 @@
                 const horizontalDiff = this.startX - this.endX
                 const verticalDiff = this.startY - this.endY
                 const direction = Math.abs(horizontalDiff) < Math.abs(verticalDiff) ? "vertical" : "horizontal"
+
+                if (Math.abs(horizontalDiff) < 10 && Math.abs(verticalDiff) < 10) {
+                    return ""
+                }
 
                 if (direction === "horizontal") {
                     return horizontalDiff > 0 ? "left" : "right"
