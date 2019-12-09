@@ -1,0 +1,282 @@
+<html>
+
+<head>
+    <title>Snake</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+</head>
+
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+
+        const canvasHeight = 200
+        const canvasWidth = 500
+        const contextScale = 10
+        const gameSpeed = 70
+
+        const bodyColor = "black"
+        const canvasBackgroundColor = "#03306947"
+        const snakeColor = "#fff"
+        const appleColor = "#ff0082"
+        const canvas = document.querySelector("#canvas")
+        const context = canvas.getContext('2d')
+
+        document.body.style = `
+            background-color: ${bodyColor};
+            background-image: url(background.jpg);
+            display: flex;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-blend-mode: luminosity;
+        `
+        canvas.height = canvasHeight
+        canvas.width = canvasWidth
+        canvas.style = `
+            margin: auto;
+            background-color: ${canvasBackgroundColor};
+            box-shadow: 0px 4px 13px 9px #ffffff61;
+        `
+        context.scale(contextScale, contextScale)
+
+        const matrixUp = [0, -1]
+        const matrixRight = [1, 0]
+        const matrixDown = [0, 1]
+        const matrixLeft = [-1, 0]
+
+        const minY = () => 0
+        const maxX = () => canvasWidth / contextScale
+        const maxY = () => canvasHeight / contextScale
+        const minX = () => 0
+
+        let gameTimer
+        let score = 0
+        let apple = [0, 0]
+        let direction = [1, 0]
+        let pendingDirection = "right"
+
+        const snakeDefault = [
+            [4, 1],
+            [3, 1],
+            [2, 1],
+            [1, 1],
+        ]
+        let snake = []
+
+        const setDirectionUp = () => direction = matrixUp
+        const setDirectionRight = () => direction = matrixRight
+        const setDirectionDown = () => direction = matrixDown
+        const setDirectionLeft = () => direction = matrixLeft
+
+        const setDirection = () => {
+            if (pendingDirection === "up") setDirectionUp()
+            if (pendingDirection === "right") setDirectionRight()
+            if (pendingDirection === "down") setDirectionDown()
+            if (pendingDirection === "left") setDirectionLeft()
+        }
+
+        const getDirection = () => {
+            if (direction.toString() === matrixUp.toString()) return "up"
+            if (direction.toString() === matrixRight.toString()) return "right"
+            if (direction.toString() === matrixDown.toString()) return "down"
+            if (direction.toString() === matrixLeft.toString()) return "left"
+        }
+
+        const addHead = () => {
+            return snake.unshift([
+                snakeHead()[0] + direction[0],
+                snakeHead()[1] + direction[1],
+            ])
+        }
+
+        const removeTail = () => snake.pop()
+
+        const onKeyup = ({ key }) => {
+            const currentDirection = getDirection()
+
+            if (key === "ArrowUp" && currentDirection !== "down") pendingDirection = "up"
+            if (key === "ArrowRight" && currentDirection !== "left") pendingDirection = "right"
+            if (key === "ArrowDown" && currentDirection !== "up") pendingDirection = "down"
+            if (key === "ArrowLeft" && currentDirection !== "right") pendingDirection = "left"
+        }
+
+        const onSwipe = function (direction) {
+            console.log(direction)
+
+            const currentDirection = getDirection()
+
+            if (direction === "up" && currentDirection !== "down") pendingDirection = "up"
+            if (direction === "right" && currentDirection !== "left") pendingDirection = "right"
+            if (direction === "down" && currentDirection !== "up") pendingDirection = "down"
+            if (direction === "left" && currentDirection !== "right") pendingDirection = "left"
+        }
+
+        const onClick = ({ clientX: mouseX, clientY: mouseY }) => {
+            const { clientWidth, clientHeight } = document.body
+            const horizontalPart = mouseX > (clientWidth / 2) ? "right" : "left"
+            const verticalPart = mouseY > (clientHeight / 2) ? "bottom" : "top"
+            const isTopLeft = verticalPart === "top" && horizontalPart === "left"
+            const isTopRight = verticalPart === "top" && horizontalPart === "right"
+            const isBottomLeft = verticalPart === "bottom" && horizontalPart === "left"
+            const isBottomRight = verticalPart === "bottom" && horizontalPart === "right"
+
+            if (isTopLeft) pendingDirection = "up"
+            if (isTopRight) pendingDirection = "right"
+            if (isBottomRight) pendingDirection = "down"
+            if (isBottomLeft) pendingDirection = "left"
+        }
+
+        const snakeHead = () => snake[0]
+
+        const isHeadTouchingApple = () => (snakeHead()[0] === apple[0] && snakeHead()[1] === apple[1])
+
+        const isHeadTouchingBody = () => {
+            return !!snake
+                .slice(1) // removes this clones head cause the first item and the snakeHead() will always be the same.
+                .find(([x, y]) => snakeHead()[0] === x && snakeHead()[1] === y)
+        }
+
+        const handleAppleHit = () => {
+            setApple()
+            score += 1
+        }
+
+        const setApple = () => {
+            const randomPos = (max) => Math.floor((Math.random() * max / contextScale))
+            apple = [randomPos(canvasWidth), randomPos(canvasHeight)]
+        }
+
+        const isBeyondBoundaryUp = y => y < minY()
+        const isBeyondBoundaryRight = x => x >= maxX()
+        const isBeyondBoundaryDown = y => y >= maxY()
+        const isBeyondBoundaryLeft = x => x < minX()
+
+        const handleBeyondBoundary = () => {
+            snake.forEach((coordinate) => {
+                const [x, y] = coordinate
+                if (isBeyondBoundaryUp(y)) coordinate[1] = maxY()
+                if (isBeyondBoundaryRight(x)) coordinate[0] = minX()
+                if (isBeyondBoundaryDown(y)) coordinate[1] = minY()
+                if (isBeyondBoundaryLeft(x)) coordinate[0] = maxX()
+            })
+        }
+
+        const updateLoop = () => {
+            setDirection()
+
+            const head = addHead()
+
+            if (isHeadTouchingBody()) {
+                stop()
+                alert(`GAME OVER! You got ${score} apples`)
+                start()
+                return
+            }
+            if (isHeadTouchingApple()) {
+                handleAppleHit()
+            }
+            else {
+                removeTail()
+            }
+
+            handleBeyondBoundary()
+
+            draw()
+        }
+
+        const drawSnake = () => {
+            context.fillStyle = snakeColor
+            context.strokeStyle = snakeColor
+            snake.forEach(([x, y]) => {
+                context.fillRect(x, y, 1, 1)
+            })
+        }
+
+        const drawApple = () => {
+            context.fillStyle = appleColor
+            context.fillRect(apple[0], apple[1], 1, 1)
+        }
+
+        const draw = () => {
+            context.clearRect(0, 0, canvasWidth, canvasHeight)
+            drawApple()
+            drawSnake()
+        }
+
+        const start = () => {
+            score = 0
+            setApple()
+            snake = [...snakeDefault]
+            setDirectionRight()
+            gameTimer = setInterval(() => updateLoop(), gameSpeed)
+            document.addEventListener("keyup", onKeyup)
+        }
+
+        const stop = () => {
+            clearInterval(gameTimer)
+            document.removeEventListener("keyup", onKeyup)
+        }
+
+        start()
+
+
+        // -- tap/click -----------------------
+
+        document.body.addEventListener("click", onClick);
+
+        // -- TOUCH -----------------------
+
+        const Touch = function (el, callback) {
+
+            this.startY = null
+            this.startX = null
+            this.endY = null
+            this.endX = null
+
+            this.direction = function () {
+                const horizontalDiff = this.startX - this.endX
+                const verticalDiff = this.startY - this.endY
+                const direction = Math.abs(horizontalDiff) < Math.abs(verticalDiff) ? "vertical" : "horizontal"
+
+                if (direction === "horizontal") {
+                    return horizontalDiff > 0 ? "left" : "right"
+                }
+                if (direction === "vertical") {
+                    return verticalDiff > 0 ? "up" : "down"
+                }
+            }
+
+            const touchStart = e => {
+                this.startX = e.changedTouches[0].clientX
+                this.startY = e.changedTouches[0].clientY
+            }
+            const touchEnd = e => {
+                this.endX = e.changedTouches[0].clientX
+                this.endY = e.changedTouches[0].clientY
+
+                callback(this.direction())
+            }
+            // const touchCancel = e => {
+            //     // console.log(e, "touchCancel")
+            // }
+            // const touchMove = e => {
+            //     // console.log(e, "touchMove")
+            // }
+
+
+
+            el.addEventListener("touchstart", touchStart, false);
+            el.addEventListener("touchend", touchEnd, false);
+            // el.addEventListener("touchcancel", touchCancel, false);
+            // el.addEventListener("touchmove", touchMove, false);
+
+        }
+
+        const touch = new Touch(canvas, onSwipe)
+
+
+    </script>
+</body>
+
+</html>
