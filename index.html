@@ -26,13 +26,13 @@
         const canvas = document.querySelector("#canvas")
         const context = canvas.getContext('2d')
 
+        // background-blend-mode: luminosity;
         document.body.style = `
             background-color: ${bodyColor};
             background-image: url(${backgroundImageUrl});
             display: flex;
             background-repeat: no-repeat;
             background-size: cover;
-            background-blend-mode: luminosity;
             margin: 0;
         `
         canvas.height = canvasHeight
