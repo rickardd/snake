@@ -15,8 +15,8 @@
         clientWidth = Math.floor(clientWidth)
         clientHeight = Math.floor(clientHeight)
 
-        const canvasHeight = clientHeight < 900 ? clientHeight : 200
-        const canvasWidth = clientWidth < 900 ? clientWidth : 500
+        const canvasHeight = clientHeight < 600 ? clientHeight : 200
+        const canvasWidth = clientWidth < 600 ? clientWidth : 500
         const contextScale = 10
         const gameSpeed = 70
 
@@ -28,7 +28,6 @@
         const canvas = document.querySelector("#canvas")
         const context = canvas.getContext('2d')
 
-        // background-blend-mode: luminosity;
         document.body.style = `
             background-color: ${bodyColor};
             background-image: url(${backgroundImageUrl});
@@ -56,6 +55,7 @@
         const maxY = () => canvasHeight / contextScale
         const minX = () => 0
 
+        let touch
         let gameTimer
         let score = 0
         let apple = [0, 0]
@@ -109,13 +109,9 @@
         }
 
         const onSwipe = function (direction) {
-            // console.log("swipe", direction)
-
-            if (!direction) {
-                return
-            }
-
             const currentDirection = getDirection()
+
+            if (!direction) return
 
             if (direction === "up" && currentDirection !== "down") pendingDirection = "up"
             if (direction === "right" && currentDirection !== "left") pendingDirection = "right"
@@ -124,22 +120,54 @@
         }
 
         const onClick = ({ clientX: mouseX, clientY: mouseY }) => {
+            const clickedSide = mouseX <= clientWidth / 2 ? "left" : "right"
             const currentDirection = getDirection()
-            const { clientWidth, clientHeight } = document.body
-            const horizontalPart = mouseX > (clientWidth / 2) ? "right" : "left"
-            const verticalPart = mouseY > (clientHeight / 2) ? "bottom" : "top"
-            const isTopLeft = verticalPart === "top" && horizontalPart === "left"
-            const isTopRight = verticalPart === "top" && horizontalPart === "right"
-            const isBottomLeft = verticalPart === "bottom" && horizontalPart === "left"
-            const isBottomRight = verticalPart === "bottom" && horizontalPart === "right"
-            // console.log("click", verticalPart, horizontalPart)
+            let steerRight = ""
+            let steerLeft = ""
 
-            if (isTopLeft && currentDirection !== "down") return pendingDirection = "up"
-            if (isTopRight && currentDirection !== "left") return pendingDirection = "right"
-            if (isBottomRight && currentDirection !== "up") return pendingDirection = "down"
-            // console.log('click pendingDirection', isBottomLeft && currentDirection !== "right", isBottomLeft, currentDirection)
-            if (isBottomLeft && currentDirection !== "right") return pendingDirection = "left"
+            if (currentDirection === "up") steerRight = "right"
+            if (currentDirection === "right") steerRight = "down"
+            if (currentDirection === "down") steerRight = "left"
+            if (currentDirection === "left") steerRight = "up"
 
+            if (currentDirection === "up") steerLeft = "left"
+            if (currentDirection === "right") steerLeft = "up"
+            if (currentDirection === "down") steerLeft = "right"
+            if (currentDirection === "left") steerLeft = "down"
+
+            if (clickedSide === "left") return pendingDirection = steerLeft
+            if (clickedSide === "right") return pendingDirection = steerRight
+        }
+
+        const Touch = function (el, callback) {
+            this.startY = null
+            this.startX = null
+            this.endY = null
+            this.endX = null
+
+            this.direction = function () {
+                const horizontalDiff = this.startX - this.endX
+                const verticalDiff = this.startY - this.endY
+                const direction = Math.abs(horizontalDiff) < Math.abs(verticalDiff) ? "vertical" : "horizontal"
+
+                if (Math.abs(horizontalDiff) < 10 && Math.abs(verticalDiff) < 10) return ""
+                if (direction === "horizontal") return horizontalDiff > 0 ? "left" : "right"
+                if (direction === "vertical") return verticalDiff > 0 ? "up" : "down"
+            }
+
+            const touchStart = e => {
+                this.startX = e.changedTouches[0].clientX
+                this.startY = e.changedTouches[0].clientY
+            }
+            const touchEnd = e => {
+                this.endX = e.changedTouches[0].clientX
+                this.endY = e.changedTouches[0].clientY
+
+                callback(this.direction())
+            }
+
+            el.addEventListener("touchstart", touchStart, false);
+            el.addEventListener("touchend", touchEnd, false);
         }
 
         const snakeHead = () => snake[0]
@@ -184,7 +212,6 @@
 
             if (isHeadTouchingBody()) {
                 stop()
-                // alert(`GAME OVER! You got ${score} apples`)
                 const restart = confirm(`GAME OVER! You got ${score} apples`);
                 if (restart) {
                     start()
@@ -199,7 +226,6 @@
             }
 
             handleBeyondBoundary()
-
             draw()
         }
 
@@ -231,74 +257,18 @@
             setDirectionRight()
             gameTimer = setInterval(() => updateLoop(), gameSpeed)
             document.addEventListener("keyup", onKeyup)
+            document.body.addEventListener("click", onClick);
+            touch = new Touch(canvas, onSwipe)
         }
 
         const stop = () => {
             clearInterval(gameTimer)
             document.removeEventListener("keyup", onKeyup)
+            document.body.removeEventListener("click", onClick);
+            touch = null
         }
 
         start()
-
-
-        // -- tap/click -----------------------
-
-        document.body.addEventListener("click", onClick);
-
-        // -- TOUCH -----------------------
-
-        const Touch = function (el, callback) {
-
-            this.startY = null
-            this.startX = null
-            this.endY = null
-            this.endX = null
-
-            this.direction = function () {
-                const horizontalDiff = this.startX - this.endX
-                const verticalDiff = this.startY - this.endY
-                const direction = Math.abs(horizontalDiff) < Math.abs(verticalDiff) ? "vertical" : "horizontal"
-
-                if (Math.abs(horizontalDiff) < 10 && Math.abs(verticalDiff) < 10) {
-                    return ""
-                }
-
-                if (direction === "horizontal") {
-                    return horizontalDiff > 0 ? "left" : "right"
-                }
-                if (direction === "vertical") {
-                    return verticalDiff > 0 ? "up" : "down"
-                }
-            }
-
-            const touchStart = e => {
-                this.startX = e.changedTouches[0].clientX
-                this.startY = e.changedTouches[0].clientY
-            }
-            const touchEnd = e => {
-                this.endX = e.changedTouches[0].clientX
-                this.endY = e.changedTouches[0].clientY
-
-                callback(this.direction())
-            }
-            // const touchCancel = e => {
-            //     // console.log(e, "touchCancel")
-            // }
-            // const touchMove = e => {
-            //     // console.log(e, "touchMove")
-            // }
-
-
-
-            el.addEventListener("touchstart", touchStart, false);
-            el.addEventListener("touchend", touchEnd, false);
-            // el.addEventListener("touchcancel", touchCancel, false);
-            // el.addEventListener("touchmove", touchMove, false);
-
-        }
-
-        const touch = new Touch(canvas, onSwipe)
-
 
     </script>
 </body>
