@@ -11,7 +11,10 @@
 
     <script>
 
-        const { clientWidth, clientHeight } = document.body
+        let { clientWidth, clientHeight } = document.body
+        clientWidth = Math.floor(clientWidth)
+        clientHeight = Math.floor(clientHeight)
+
         const canvasHeight = clientHeight < 900 ? clientHeight : 200
         const canvasWidth = clientWidth < 900 ? clientWidth : 500
         const contextScale = 10
@@ -20,7 +23,6 @@
         const bodyColor = "#000"
         const canvasBackgroundColor = "#03306947"
         const backgroundImageUrl = window.location.href.replace("index.html", "background3.jpg")
-        console.log('backgroundImageUrl', backgroundImageUrl)
         const snakeColor = "#fff"
         const appleColor = "#ff0082"
         const canvas = document.querySelector("#canvas")
@@ -66,6 +68,7 @@
             [2, 1],
             [1, 1],
         ]
+
         let snake = []
 
         const setDirectionUp = () => direction = matrixUp
@@ -89,8 +92,8 @@
 
         const addHead = () => {
             return snake.unshift([
-                snakeHead()[0] + direction[0],
-                snakeHead()[1] + direction[1],
+                Math.round(snakeHead()[0]) + direction[0],
+                Math.round(snakeHead()[1]) + direction[1],
             ])
         }
 
@@ -99,8 +102,6 @@
         const onKeyup = ({ key }) => {
             const currentDirection = getDirection()
 
-            console.log("key", key)
-
             if (key === "ArrowUp" && currentDirection !== "down") pendingDirection = "up"
             if (key === "ArrowRight" && currentDirection !== "left") pendingDirection = "right"
             if (key === "ArrowDown" && currentDirection !== "up") pendingDirection = "down"
@@ -108,7 +109,7 @@
         }
 
         const onSwipe = function (direction) {
-            console.log("swipe", direction)
+            // console.log("swipe", direction)
 
             if (!direction) {
                 return
@@ -131,7 +132,7 @@
             const isTopRight = verticalPart === "top" && horizontalPart === "right"
             const isBottomLeft = verticalPart === "bottom" && horizontalPart === "left"
             const isBottomRight = verticalPart === "bottom" && horizontalPart === "right"
-            console.log("click", verticalPart, horizontalPart)
+            // console.log("click", verticalPart, horizontalPart)
 
             if (isTopLeft && currentDirection !== "down") return pendingDirection = "up"
             if (isTopRight && currentDirection !== "left") return pendingDirection = "right"
