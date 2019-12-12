@@ -22,7 +22,6 @@
 
         const bodyColor = "#000"
         const canvasBackgroundColor = "#03306947"
-        const backgroundImageUrl = window.location.href.replace("index.html", "background3.jpg")
         const snakeColor = "#fff"
         const appleColor = "#ff0082"
         const canvas = document.querySelector("#canvas")
@@ -30,12 +29,12 @@
 
         document.body.style = `
             background-color: ${bodyColor};
-            background-image: url(${backgroundImageUrl});
             display: flex;
             background-repeat: no-repeat;
             background-size: cover;
             margin: 0;
         `
+
         canvas.height = canvasHeight
         canvas.width = canvasWidth
         canvas.style = `
@@ -205,6 +204,11 @@
             })
         }
 
+        const setBackground = () => {
+            const index = Math.round(Math.random() * 3) + 1
+            document.body.style.backgroundImage = `url(background${index}.jpg)`
+        }
+
         const updateLoop = () => {
             setDirection()
 
@@ -249,6 +253,7 @@
         }
 
         const start = () => {
+            setBackground()
             currentDirection = "right"
             pendingDirection = ""
             score = 0
