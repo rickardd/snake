@@ -1,13 +1,74 @@
 <html>
 
 <head>
-    <title>Snake</title>
     <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <title>Serpiente</title>
+    <meta name="description" content="A game inspired by the popular game Snake found on Nokia 3310">
+    <meta name="theme-color" content="#009c39">
+    <meta charset="utf-8">
+    <meta name="author" content="Rickard Dahlström">
+    <meta name="keywords" content="JavaScript, Game, Snake, Serpiente">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Tamma+2:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            position: relative;
+            color: white;
+            font-family: 'Baloo Tamma 2', cursive;
+            letter-spacing: 2;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-top: 24px;
+            margin-bottom: 48px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            padding: 0;
+            line-height: 1;
+            display: block;
+        }
+
+        h2 {
+            font-size: .75rem;
+        }
+
+        .canvas-wrapper {
+            display: flex;
+        }
+
+        .icon-credits {
+            position: fixed;
+            right: 0;
+            left: 0;
+            bottom: 12px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            font-size: 12px;
+        }
+    </style>
 </head>
 
 <body>
 
-    <canvas id="canvas"></canvas>
+    <header>
+        <h1>Serpiente</h1>
+        <h2>A javascript game inspired by the popular game of Nokia 3310</h2>
+    </header>
+
+    <div class="canvas-wrapper">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <div class="icon-credits">Icons made by <a href="https://www.flaticon.com/authors/freepik"
+            title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+    </div>
 
     <script>
 
@@ -27,13 +88,10 @@
         const canvas = document.querySelector("#canvas")
         const context = canvas.getContext('2d')
 
-        document.body.style = `
-            background-color: ${bodyColor};
-            display: flex;
-            background-repeat: no-repeat;
-            background-size: cover;
-            margin: 0;
-        `
+        const backgroundColors = ["#e41822", "#8a898d", "#d7611d", "#cf8d0f", "#c8bf01", "#7d9d28", "#1c8334"]
+        let currentBackgroundColor = backgroundColors[0]
+
+        document.body.style = `background-color: ${bodyColor};`
 
         canvas.height = canvasHeight
         canvas.width = canvasWidth
@@ -205,8 +263,8 @@
         }
 
         const setBackground = () => {
-            const index = Math.round(Math.random() * 1) + 1
-            document.body.style.backgroundImage = `url(background${index}.jpg)`
+            currentBackgroundColor = backgroundColors.filter(color => color !== currentBackgroundColor)[Math.floor(Math.random() * (backgroundColors.length - 1))]
+            document.body.style.backgroundColor = currentBackgroundColor
         }
 
         const updateLoop = () => {
@@ -275,6 +333,20 @@
 
         start()
 
+    </script>
+
+    <script>
+        // ServiceWorker is a progressive technology. Ignore unsupported browsers
+        if ('serviceWorker' in navigator) {
+            console.log('CLIENT: service worker registration in progress.');
+            navigator.serviceWorker.register('/sw.js').then(function () {
+                console.log('CLIENT: service worker registration complete.');
+            }, function () {
+                console.log('CLIENT: service worker registration failure.');
+            });
+        } else {
+            console.log('CLIENT: service worker is not supported.');
+        }
     </script>
 </body>
 

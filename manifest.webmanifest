@@ -1,0 +1,38 @@
+{
+    "short_name": "Serpiente",
+    "name": "Serpiente: A snake like game",
+    "description": "A game inspired by the popular game Snake found on Nokia 3310.",
+    "icons": [
+        {
+            "src": "/img/icon-128.png",
+            "type": "image/png",
+            "sizes": "128x128",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/img/icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "any maskable"
+        }
+    ],
+    "start_url": "./index.html",
+    "background_color": "#009c39",
+    "display": "fullscreen",
+    "scope": "/",
+    "theme_color": "#009c39",
+    "shortcuts": [
+        {
+            "name": "About Serpiente",
+            "short_name": "About",
+            "description": "About Serpiente",
+            "url": "/about.html",
+            "icons": [
+                {
+                    "src": "/img/icon-128.png",
+                    "sizes": "128x128"
+                }
+            ]
+        }
+    ]
+}
