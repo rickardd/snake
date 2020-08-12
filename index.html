@@ -38,9 +38,7 @@
             font-size: .75rem;
         }
 
-        .canvas-wrapper {
-            display: flex;
-        }
+
 
         .icon-credits {
             position: fixed;
@@ -51,6 +49,20 @@
             display: flex;
             justify-content: center;
             font-size: 12px;
+        }
+
+        .canvas-wrapper {
+            display: flex;
+            max-width: 600px;
+            max-height: 300px;
+            margin: auto;
+            border: 7px solid #ffffff40;
+        }
+
+        #canvas {
+            margin: auto;
+            background-color: #03306947;
+            width: 100%;
         }
     </style>
 </head>
@@ -76,30 +88,34 @@
         clientWidth = Math.floor(clientWidth)
         clientHeight = Math.floor(clientHeight)
 
-        const canvasHeight = clientHeight < 600 ? clientHeight : 200
-        const canvasWidth = clientWidth < 600 ? clientWidth : 500
-        const contextScale = 10
+        const contextScale = 16
         const gameSpeed = 70
 
-        const bodyColor = "#000"
-        const canvasBackgroundColor = "#03306947"
         const snakeColor = "#fff"
         const appleColor = "#ff0082"
         const canvas = document.querySelector("#canvas")
+        let { offsetWidth: canvasWidth, offsetHeight: canvasHeight } = canvas
         const context = canvas.getContext('2d')
 
         const backgroundColors = ["#e41822", "#8a898d", "#d7611d", "#cf8d0f", "#c8bf01", "#7d9d28", "#1c8334"]
         let currentBackgroundColor = backgroundColors[0]
 
-        document.body.style = `background-color: ${bodyColor};`
-
         canvas.height = canvasHeight
         canvas.width = canvasWidth
-        canvas.style = `
-            margin: auto;
-            background-color: ${canvasBackgroundColor};
-            box-shadow: 0px 4px 13px 9px #ffffff61;
-        `
+
+        console.log(canvasWidth, canvasHeight)
+
+        window.addEventListener("resize", event => {
+            console.log(event)
+            setCanvasSize()
+        })
+
+        const setCanvasSize = () => {
+            // This function doesn't do much yet. Functions that's uses these values need to be updated too. 
+            let { offsetWidth: canvasWidth, offsetHeight: canvasHeight } = canvas
+            console.log(canvasWidth, canvasHeight)
+        }
+
         context.scale(contextScale, contextScale)
 
         const matrixUp = [0, -1]
