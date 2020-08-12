@@ -7,9 +7,9 @@ self.addEventListener("install", function (event) {
             .open(version + 'fundamentals')
             .then(function (cache) {
                 return cache.addAll([
-                    '/',
-                    '/index.html',
-                    '/about.html'
+                    './',
+                    './index.html',
+                    './about.html'
                 ]);
             })
             .then(function () {
