@@ -17,18 +17,26 @@
             color: white;
             font-family: 'Baloo Tamma 2', cursive;
             letter-spacing: 2;
+            margin: 0;
+        }
+
+        main {
+            display: flex;
             flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
         }
 
         header {
             text-align: center;
             margin-top: 24px;
-            margin-bottom: 48px;
+
         }
 
         h1 {
             font-size: 2rem;
             margin-bottom: 12px;
+            margin-top: 0;
             padding: 0;
             line-height: 1;
             display: block;
@@ -36,19 +44,6 @@
 
         h2 {
             font-size: .75rem;
-        }
-
-
-
-        .icon-credits {
-            position: fixed;
-            right: 0;
-            left: 0;
-            bottom: 12px;
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            font-size: 12px;
         }
 
         .canvas-wrapper {
@@ -64,23 +59,38 @@
             background-color: #03306947;
             width: 100%;
         }
+
+        .icon-credits {
+            /* position: fixed;
+            right: 0;
+            left: 0;
+            bottom: 12px; */
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            font-size: 12px;
+        }
     </style>
 </head>
 
 <body>
 
-    <header>
-        <h1>Serpiente</h1>
-        <h2>A javascript game inspired by the popular game of Nokia 3310</h2>
-    </header>
+    <main>
 
-    <div class="canvas-wrapper">
-        <canvas id="canvas"></canvas>
-    </div>
+        <header>
+            <h1>Serpiente</h1>
+            <h2>A javascript game inspired by the popular game of Nokia 3310</h2>
+        </header>
 
-    <div class="icon-credits">Icons made by <a href="https://www.flaticon.com/authors/freepik"
-            title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
-    </div>
+        <div class="canvas-wrapper">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="icon-credits">Icons made by <a href="https://www.flaticon.com/authors/freepik"
+                title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/"
+                title="Flaticon">www.flaticon.com</a>
+        </div>
+    </main>
 
     <script>
 
@@ -103,25 +113,39 @@
         canvas.height = canvasHeight
         canvas.width = canvasWidth
 
-        console.log(canvasWidth, canvasHeight)
-
-        window.addEventListener("resize", event => {
-            console.log(event)
-            setCanvasSize()
-        })
-
-        const setCanvasSize = () => {
-            // This function doesn't do much yet. Functions that's uses these values need to be updated too. 
-            let { offsetWidth: canvasWidth, offsetHeight: canvasHeight } = canvas
-            console.log(canvasWidth, canvasHeight)
-        }
-
         context.scale(contextScale, contextScale)
 
         const matrixUp = [0, -1]
         const matrixRight = [1, 0]
         const matrixDown = [0, 1]
         const matrixLeft = [-1, 0]
+
+        const matrix = {
+            up: {
+                forwards: "up",
+                backwards: "down",
+                right: "right",
+                left: "left",
+            },
+            right: {
+                forwards: "right",
+                backwards: "left",
+                right: "down",
+                left: "up",
+            },
+            down: {
+                forwards: "down",
+                backwards: "up",
+                right: "left",
+                left: "right",
+            },
+            left: {
+                forwards: "left",
+                backwards: "right",
+                right: "up",
+                left: "down",
+            }
+        }
 
         const minY = () => 0
         const maxX = () => canvasWidth / contextScale
@@ -192,24 +216,32 @@
             if (direction === "left" && currentDirection !== "right") pendingDirection = "left"
         }
 
+        const getSectionClicked = (sections, elementSize, mousePos) => {
+            return sections
+                .map((value, i, array) => mousePos < elementSize / array.length * (i + 1) ? value : null)
+                .find((item) => !!item)
+        }
+
         const onClick = ({ clientX: mouseX, clientY: mouseY }) => {
-            const clickedSide = mouseX <= clientWidth / 2 ? "left" : "right"
             const currentDirection = getDirection()
-            let steerRight = ""
-            let steerLeft = ""
+            const mouseXRel = mouseX - canvas.offsetLeft // mouse pos relative to the canvas
+            const mouseYRel = mouseY - canvas.offsetTop // mouse pos relative to the canvas
+            const horizontalClick = getSectionClicked(["left", "dead", "right"], canvasWidth, mouseXRel)
+            const verticalClick = getSectionClicked(["up", "dead", "down"], canvasHeight, mouseYRel)
 
-            if (currentDirection === "up") steerRight = "right"
-            if (currentDirection === "right") steerRight = "down"
-            if (currentDirection === "down") steerRight = "left"
-            if (currentDirection === "left") steerRight = "up"
+            // Stops click on reversed direction. e.g snake goes right and user clicks left. Snake can't go backwards
+            if ([horizontalClick, verticalClick].includes(matrix[currentDirection].backwards)) {
+                return
+            }
 
-            if (currentDirection === "up") steerLeft = "left"
-            if (currentDirection === "right") steerLeft = "up"
-            if (currentDirection === "down") steerLeft = "right"
-            if (currentDirection === "left") steerLeft = "down"
+            if (horizontalClick === "dead" && verticalClick !== "dead") {
+                return pendingDirection = verticalClick
+            }
 
-            if (clickedSide === "left") return pendingDirection = steerLeft
-            if (clickedSide === "right") return pendingDirection = steerRight
+            if (verticalClick === "dead" && horizontalClick !== "dead") {
+                return pendingDirection = horizontalClick
+            }
+
         }
 
         const Touch = function (el, callback) {
@@ -283,6 +315,12 @@
             document.body.style.backgroundColor = currentBackgroundColor
         }
 
+        const setCanvasSize = () => {
+            // This function doesn't do much yet. Functions that's uses these values need to be updated too. 
+            let { offsetWidth: canvasWidth, offsetHeight: canvasHeight } = canvas
+            console.log(canvasWidth, canvasHeight)
+        }
+
         const updateLoop = () => {
             setDirection()
 
@@ -336,14 +374,18 @@
             setDirectionRight()
             gameTimer = setInterval(() => updateLoop(), gameSpeed)
             document.addEventListener("keyup", onKeyup)
-            document.body.addEventListener("click", onClick);
+            canvas.addEventListener("click", onClick);
             touch = new Touch(canvas, onSwipe)
+
+            window.addEventListener("resize", event => {
+                setCanvasSize()
+            })
         }
 
         const stop = () => {
             clearInterval(gameTimer)
             document.removeEventListener("keyup", onKeyup)
-            document.body.removeEventListener("click", onClick);
+            canvas.removeEventListener("click", onClick);
             touch = null
         }
 
