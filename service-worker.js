@@ -83,7 +83,7 @@ function fetchedFromNetwork(response) {
 
 function unableToResolve() {
     console.log('WORKER: fetch request failed in both cache and network.');
-    return new Response('<h1>Service Unavailable 2</h1>', {
+    return new Response('<h1>Serpiente Unavailable</h1>', {
         status: 503,
         statusText: 'Service Unavailable',
         headers: new Headers({
