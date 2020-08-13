@@ -26,7 +26,7 @@
             "name": "About Serpiente",
             "short_name": "About",
             "description": "About Serpiente",
-            "url": "/about.html",
+            "url": "./about.html",
             "icons": [
                 {
                     "src": "/img/icon-128.png",

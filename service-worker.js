@@ -1,4 +1,4 @@
-var version = 'v2::';
+var version = 'v3::';
 
 self.addEventListener("install", function (event) {
     console.log('WORKER: install event in progress.');
@@ -83,7 +83,7 @@ function fetchedFromNetwork(response) {
 
 function unableToResolve() {
     console.log('WORKER: fetch request failed in both cache and network.');
-    return new Response('<h1>Service Unavailable</h1>', {
+    return new Response('<h1>Service Unavailable 2</h1>', {
         status: 503,
         statusText: 'Service Unavailable',
         headers: new Headers({
