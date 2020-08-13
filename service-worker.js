@@ -1,4 +1,4 @@
-var version = 'v4::';
+var version = 'v1::';
 
 self.addEventListener("install", function (event) {
     console.log('WORKER: install event in progress.');
@@ -7,8 +7,8 @@ self.addEventListener("install", function (event) {
             .open(version + 'fundamentals')
             .then(function (cache) {
                 return cache.addAll([
-                    './index.html',
-                    './about.html'
+                    '/index.html',
+                    '/about.html'
                 ]);
             })
             .then(function () {
@@ -31,7 +31,10 @@ self.addEventListener("fetch", function (event) {
             .match(event.request)
             .then(function (cached) {
                 var networked = fetch(event.request)
-                    .then(fetchedFromNetwork, unableToResolve)
+                    .then(
+                        response => fetchedFromNetwork(response, event),
+                        unableToResolve
+                    )
                     .catch(unableToResolve);
 
                 // This will return cached version if it exist, else network version.
@@ -66,7 +69,7 @@ self.addEventListener("activate", function (event) {
 });
 
 
-function fetchedFromNetwork(response) {
+function fetchedFromNetwork(response, event) {
     var cacheCopy = response.clone();
     console.log('WORKER: fetch response from network.', event.request.url);
     caches
